@@ -19,7 +19,7 @@ add_doxygen(
     EXCLUDE_PATTERNS
         */internal/*
     EXCLUDE_SYMBOLS
-	*::internal*
+    *::internal*
         *::Priv
     INSTALL
         "${INSTALL_DOCDIR}/cpp"
