@@ -1,7 +1,7 @@
 
 add_subdirectory(examples)
-
-include(UseDoxygen OPTIONAL)
+set(CMAKE_MODULE_PATH "/usr/share/cmake/DoxygenBuilder;${CMAKE_MODULE_PATH}")
+include(DoxygenBuilderConfig OPTIONAL)
 
 add_doxygen(
     qtdoc

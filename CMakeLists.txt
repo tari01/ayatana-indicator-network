@@ -11,7 +11,7 @@ endif()
 
 option(trace_messages "Print debug trace messages." ${TRACE_DEFAULT})
 option(REMOTE_BUILD "Remote build (skip docs, translations, tests)." FALSE)
-option(ENABLE_TESTS "Enable tests" TRUE)
+option(ENABLE_TESTS "Enable tests" FALSE)
 
 if(${trace_messages})
   add_definitions(-DINDICATOR_NETWORK_TRACE_MESSAGES)
@@ -22,9 +22,11 @@ add_definitions(
 )
 
 find_package(PkgConfig REQUIRED)
+set(CMAKE_MODULE_PATH "/usr/share/cmake/CoverageReport;${CMAKE_MODULE_PATH}")
 include(EnableCoverageReport)
 include(GNUInstallDirs)
-include(UseGSettings)
+set(CMAKE_MODULE_PATH "/usr/share/cmake/GSettings;${CMAKE_MODULE_PATH}")
+include(GSettingsConfig)
 
 set(PROJECT_VERSION "16.10.0")
 set(PACKAGE ${CMAKE_PROJECT_NAME})
@@ -33,12 +35,6 @@ add_definitions (
     -DGETTEXT_PACKAGE="${GETTEXT_PACKAGE}"
     -DGNOMELOCALEDIR="${CMAKE_INSTALL_FULL_LOCALEDIR}"
 )
-
-# Workaround for libexecdir on debian
-if (EXISTS "/etc/debian_version")
-  set(CMAKE_INSTALL_LIBEXECDIR ${CMAKE_INSTALL_LIBDIR})
-  set(CMAKE_INSTALL_FULL_LIBEXECDIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBEXECDIR}")
-endif()
 
 set(DATA_DIR "${CMAKE_SOURCE_DIR}/data")
 
@@ -52,10 +48,14 @@ pkg_check_modules(
 include_directories(${GLIB_INCLUDE_DIRS})
 
 pkg_check_modules(
-  UNITY_API REQUIRED
+  UNITY_API
   libunity-api
 )
 include_directories(${UNITY_API_INCLUDE_DIRS})
+
+if(UNITY_API_FOUND)
+    add_definitions(-DHAS_UNITY_API)
+endif()
 
 set(OFONO_REQUIRED_VERSION 1.12)
 pkg_check_modules(
@@ -66,7 +66,7 @@ include_directories(${OFONO_INCLUDE_DIRS})
 
 pkg_check_modules(
     NETWORKMANAGER REQUIRED
-    NetworkManager
+    libnm
 )
 include_directories(${NETWORKMANAGER_INCLUDE_DIRS})
 
@@ -82,11 +82,15 @@ include_directories(${Qt5Core_INCLUDE_DIRS})
 find_package(Qt5DBus COMPONENTS Qt5DBusMacros REQUIRED)
 include_directories(${Qt5DBus_INCLUDE_DIRS})
 
-pkg_check_modules(NM REQUIRED NetworkManager REQUIRED)
+pkg_check_modules(NM REQUIRED libnm REQUIRED)
 include_directories(${NM_INCLUDE_DIRS})
 
 pkg_check_modules(URL_DISPATCHER REQUIRED url-dispatcher-1)
 include_directories(${URL_DISPATCHER_INCLUDE_DIRS})
+
+if(URL_DISPATCHER_FOUND)
+    add_definitions(-DHAS_URL_DISPATCHER)
+endif()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
